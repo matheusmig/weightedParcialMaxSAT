@@ -27,25 +27,33 @@ void setup()
 {
   int start = millis();
   output  = createWriter("output.txt");
+  output.println("c --------------------------");
+  output.println("c My Weighted Max-SAT Solver");
+  output.println("c --------------------------");
   
   Individual[]  population = new Individual[POPULATIONSIZE];
   Individual[]  offspring  = new Individual[POPULATIONSIZE];
   
-  if(Initialize())
+  if(Initialize()) //lê a entrada e passa as configuracões para nosso algoritmo genético funcionar.
   {
     int bestFit = 0;
+    int unsatisfatedClausules = 0;
+    
     for(int i = 0; i < POPULATIONSIZE; i++)
     {/*população inicial*/      
       offspring[i] = new Individual(i);
-      if(offspring[i].fitness > bestFit)
+      if(offspring[i].fitness > bestFit)  //verifica o individuo que tem o melhor fitnessda geracao
       {
         best = new Individual(offspring[i]);
         bestFit = best.fitness;
-      }     
+        unsatisfatedClausules = best.weightUnsatisfatedClausules;
+      }   
+
     }
     best.show();
     println(maxFitness);
     println("--------------------------------\n\n");
+    output.println("o "+best.weightUnsatisfatedClausules); 
     int  generation = 0;
     start = millis();
     while(millis()-start < TIMEOUT && bestFit < maxFitness)
@@ -87,14 +95,20 @@ void setup()
         {
           best = new Individual(offspring[o]);
           bestFit = best.fitness;
+          unsatisfatedClausules = best.weightUnsatisfatedClausules;
         }
+        
       }      
+      
+      output.println("o "+unsatisfatedClausules);
       generation++;
     }
     println("\nSolution:");
     best.show();
     println(maxFitness);
-    println("in", generation, "generations");
+    println("in", generation, "generations"); 
+    output.println("s OPTIMUM FOUND"); 
+    output.println("v"+best.dna);
   }
   else
   {

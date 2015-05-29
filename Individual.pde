@@ -2,6 +2,7 @@ class Individual implements Comparable
 {
   BitSet  dna;
   int    fitness;
+  int    weightUnsatisfatedClausules;
   
   Individual(int _only)
   {    
@@ -15,6 +16,7 @@ class Individual implements Comparable
     }
     
     fitness = getFitness();
+    weightUnsatisfatedClausules = getSumWeightsUnsatisfatedClausules();
   }
   
   Individual(BitSet _dna)
@@ -22,14 +24,17 @@ class Individual implements Comparable
     dna = (BitSet) _dna.clone();
     mutate(dna);
     fitness = getFitness();
+    weightUnsatisfatedClausules = getSumWeightsUnsatisfatedClausules();
   }
   
   Individual(Individual base)
   {/*clone*/
     dna = (BitSet) base.dna.clone();
     fitness = base.fitness;
+    weightUnsatisfatedClausules = base.weightUnsatisfatedClausules;
   }
   
+  // Retorna o peso das cláusulas aceitas usando o estado atual deste indivíduo
   int getFitness()
   {
     int fit = 0;
@@ -39,12 +44,12 @@ class Individual implements Comparable
     for(int clausule = 0; clausule < clausuleCount; clausule++)
     {
       
-      BitSet check = (BitSet) dna.clone();
-      for(int i: negatedVariable[clausule])
+      BitSet check = (BitSet) dna.clone(); //check equivale ao estado atual das variaveis do nosso individuo
+      for(int i: negatedVariable[clausule]) //nao podemos esquecer as variaveis negadas, que estao armazenadas em outro vetor
       {
         check.flip(i);
       }
-      check.and(variableCoeficient[clausule]);
+      check.and(variableCoeficient[clausule]); 
       if(!check.isEmpty())
       {
         fit += clausuleWeight[clausule];
@@ -52,6 +57,30 @@ class Individual implements Comparable
     }
     return fit;
   }
+  
+  
+  int getSumWeightsUnsatisfatedClausules(){
+    int sumWeight = 0;
+    
+    for(int clausule = 0; clausule < clausuleCount; clausule++)
+    {
+      BitSet check = (BitSet) dna.clone(); //check é o clone do dna
+      for(int i: negatedVariable[clausule]) //nao podemos esquecer as variaveis negadas, que estao armazenadas em outro vetor
+      {
+        check.flip(i);
+      } 
+      
+      check.and(variableCoeficient[clausule]);
+      if(!check.equals(variableCoeficient[clausule]))
+      { 
+        sumWeight += clausuleWeight[clausule]; //somatorio do peso das clausulas nao aceitas
+      }
+    }
+    return sumWeight;
+  }
+    
+   
+  
   
   void shove(Individual other)
   {
